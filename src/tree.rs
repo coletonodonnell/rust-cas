@@ -242,7 +242,19 @@ fn node_creation(raw_node: (Vec<token::Token>, Vec<(i32, i32)>, Vec<token::Token
     // - If there is NUM and VAR, NUM goes to the left.
     // - If there is NUM and ABSTRACT (MUL, DIV, etc.), NUM goes to the left.
     // - If there is VAR and ABSTRACT (MUL, DIV, etc.), VAR goes to the left.
+    // - SPECIAL CASE: If the data_type_node is EXP, then ig nore all the above.
     } else {
+        match data_type_node {
+            token::Token::EXP => {
+                a = Node {
+                    data_type: data_type_node,
+                    left: Box::new(node_creation(split_locater(left_branch, left_group_locations))),
+                    right: Box::new(node_creation(split_locater(right_branch, right_group_locations))),
+                };
+                return Some(a);
+            }
+            _ => {}
+        }
         // Declare all needed variables for this operation
         // Raw branches, haven't been determined if they are left and right yet, and recursive, thus the branches won't be worked on till' their value is known
         let first_branch_raw: Option<Node> = node_creation(split_locater(left_branch, left_group_locations));
