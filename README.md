@@ -5,7 +5,7 @@ A simple Computer Algebra System written in Rust (FLVS Coding Club Project)
 - [ ] Create a tokenizer to convert an expression to abstract types.
   - [x] Implement accurate tokenization for each type. 
   - [x] Add the ability to simplify subtraction as equal to either `[ADD, NUM(-1.0), MUL]` or `[NUM(-1.0), MUL]`
-  - [ ] Add the ability to split `(...(` into `[LGROUP...LGROUP]` and `)...)` into `[RGROUP...RGROUP]`
+  - [X] Add the ability to split `(...(` into `[LGROUP...LGROUP]` and `)...)` into `[RGROUP...RGROUP]`
   - [ ] Add the ability to seperate values such as 32x into `[NUM(32.0), MUL, VAR("x")].
 - [x] Create a `LGROUP/RGROUP` fixer.
   - [x] Add the ability to accurately find group beginning and end.
