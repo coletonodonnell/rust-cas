@@ -242,7 +242,7 @@ fn node_creation(raw_node: (Vec<token::Token>, Vec<(i32, i32)>, Vec<token::Token
     // - If there is NUM and VAR, NUM goes to the left.
     // - If there is NUM and ABSTRACT (MUL, DIV, etc.), NUM goes to the left.
     // - If there is VAR and ABSTRACT (MUL, DIV, etc.), VAR goes to the left.
-    // - SPECIAL CASE: If the data_type_node is EXP, then ig nore all the above.
+    // - SPECIAL CASE: If the data_type_node is EXP, then ignore all the above.
     } else {
         match data_type_node {
             token::Token::EXP => {

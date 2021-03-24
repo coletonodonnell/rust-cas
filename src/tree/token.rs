@@ -84,22 +84,42 @@ pub fn tokenize(string_vector: Vec<String>) -> Vec<Token> {
 
         // If it begins with a "(", continue
         if x.as_str().get(0..1).unwrap() == "(" {
-            // Push the GROUP Token.
-            token_vector.push(Token::LGROUP);
-            // if there is stuff after "(", push it.
-            if x.as_str().get(1..).unwrap().to_string().is_empty() != true {
-                token = tokenizer(x.as_str().get(1..).unwrap().to_string());
-                token_vector.push(token);
+            let mut past: i32 = 0;
+            // Push All LGROUP values.
+            for a in 1..x.as_str().len() as i32 {
+                if x.as_str().get(past as usize..a as usize).unwrap() == "(" {
+                    past = a;
+                    token_vector.push(Token::LGROUP);
+                } else {
+                    past = a;
+                    break;
+                }
             }
+            // if there is stuff after "(", push it.
+            if x.as_str().get(past as usize..).unwrap() != "(" {
+                token = tokenizer(x.as_str().get(past as usize..).unwrap().to_string());
+                token_vector.push(token);
+            } else {
+                token_vector.push(Token::LGROUP);
+            }
+            
         // Else If it ends with a ")", continue
         } else if x.as_str().get(size_of_x - 1..size_of_x).unwrap() == ")" {
+            let mut past: i32 = 0;
             // if there is stuff before ")", push it.
-            if x.as_str().get(0..size_of_x - 1).unwrap().to_string().is_empty() != true {
-                token = tokenizer(x.as_str().get(0..size_of_x - 1).unwrap().to_string());
+            if x.as_str().get(0..1).unwrap().to_string() != ")" {
+                token = tokenizer(x.as_str().get(0..1).unwrap().to_string());
                 token_vector.push(token);
             }
-            // Push the GROUP Token.
-            token_vector.push(Token::RGROUP);
+
+            // Push all ")"
+            for a in 1..(x.as_str().len() + 1) as i32 {
+                if x.as_str().get(past as usize..a as usize).unwrap() == ")" {
+                    token_vector.push(Token::RGROUP);
+                }
+                past = a;
+            }
+            
         // Else If it begins with a "-", continue
         } else if x.as_str().get(0..1).unwrap() == "-" {
             // If there is stuff after "-", push the equivelant expression -1 * x, where x is what follows after "-"
@@ -298,7 +318,7 @@ fn find_groups(token_vector: Vec<Token>) -> Vec<(i32, i32)> {
     return sorted_group_locations
 }
 
-// Orchestrates the group fixes and returns the fixed Vector.
+// Orchestrates the group fixes and returns the fixed Vector and Group locations.
 pub fn fix_groups(mut token_vector: Vec<Token>) -> (Vec<Token>, Vec<(i32, i32)>) {
     let mut group_locations: Vec<(i32, i32)> = find_groups(token_vector.clone());
     if group_locations.is_empty() != true {
