@@ -2,7 +2,6 @@
 // Thing is, with this we are removing the actual S in PEMDAS, making it more PEMDA. Subtraction is an annoying thing, and it is much easier to 
 // just remove it outright in favour of multiplication of negative 1.
 
-use std::panic;
 pub mod token;
 
 // Node scructure, representing the Data type, and a recursive definition of Option Nodes. The data_type can be any Token, and if it is a NUM or VAR, 
@@ -19,15 +18,15 @@ pub struct Node {
 // Splits a vector into branches
 fn vector_split(mut token_vector: Vec<token::Token>, split_location: i32) -> (Vec<token::Token>, Vec<(i32, i32)>, Vec<token::Token>, Vec<(i32, i32)>) {
     // let the right branch be the split off branch, including split location
-    let mut right_branch: Vec<token::Token> = token_vector.split_off(split_location as usize);
+    let mut right_branch: Vec< token::Token> = token_vector.split_off(split_location as usize);
     // fix right, if need be
-    let a: (Vec<token::Token>, Vec<(i32, i32)>) = fix_groups(right_branch);
+    let a: (Vec<token::Token>, Vec<(i32, i32)>) = token::fix_groups(right_branch);
     // declare fixed stuff
     right_branch = a.0;
     // useless currently, empty assignment
     let _ = a.1;
     // fix left, if need be
-    let b: (Vec<token::Token>, Vec<(i32, i32)>) = fix_groups(token_vector);
+    let b: (Vec<token::Token>, Vec<(i32, i32)>) = token::fix_groups(token_vector);
     // declare fixed stuff
     token_vector = b.0;
     let left_group_locations: Vec<(i32, i32)> = b.1;
@@ -39,7 +38,7 @@ fn vector_split(mut token_vector: Vec<token::Token>, split_location: i32) -> (Ve
         }
     }
     // fix right branch once more
-    let c: (Vec<token::Token>, Vec<(i32, i32)>) = fix_groups(right_branch);
+    let c: (Vec<token::Token>, Vec<(i32, i32)>) = token::fix_groups(right_branch);
     right_branch = c.0;
     let right_group_locations = c.1;
     // return it!
@@ -346,189 +345,9 @@ fn node_creation(raw_node: (Vec<token::Token>, Vec<(i32, i32)>, Vec<token::Token
     return Some(a)
 }
 
-// Group
-// Removes useless groupings, add multiplication values VAR, NUM, and RGROUP values.
-fn rm_sides_add_mul(mut token_vector: Vec<token::Token>, mut group_locations: Vec<(i32, i32)>) -> (Vec<token::Token>, Vec<(i32, i32)>) {
-    // Check for "useless group" (on the outskirts of the equation) and removes them, repeats just in case there are multiple of them.
-    while group_locations.is_empty() != true && group_locations[0].0 == 0 && group_locations[0].1 == (token_vector.len() - 1) as i32 {
-        token_vector.remove(0 as usize);
-        token_vector.remove((token_vector.len() - 1) as usize);
-        group_locations.remove(0 as usize);
-        group_locations = find_groups(token_vector.clone());
-    }
-
-
-    let a: i32 = group_locations.len() as i32;
-    let mut i: i32 = 0;
-    let mut b: bool = false;
-
-    while a > i {
-        for a in group_locations.clone() {
-            if a.0 > 0 {
-                match token_vector[(a.0 - 1) as usize] {
-                    // Check for NUM, VAR, or RGROUP value before LGROUP value, and if so add a MUL Value between them.
-                    token::Token::NUM(_) => {
-                        token_vector.insert(a.0 as usize, token::Token::MUL);
-                        b = true;
-                        break;
-                    }
-                    token::Token::VAR(_) => {
-                        token_vector.insert(a.0 as usize, token::Token::MUL);
-                        b = true;
-                        break;
-                    }
-                    token::Token::RGROUP => {
-                        token_vector.insert(a.0 as usize, token::Token::MUL);
-                        b = true;
-                        break;
-                    }
-                    // If there is an ADD parameter before a LGROUP, remove the LGROUP and its respective RGROUP value.
-                    token::Token::ADD => {
-                        token_vector.remove(a.1 as usize);
-                        token_vector.remove(a.0 as usize);
-                        b = true;
-                        break;
-                    }
-                    _ => {}
-
-                }
-            }
-        }
-        if b == true {
-            group_locations = find_groups(token_vector.clone());
-            b = false;
-        }
-        i += 1;
-    }
-
-    return (token_vector, group_locations)
-}
-
-// Find groupings.
-fn find_groups(token_vector: Vec<token::Token>) -> Vec<(i32, i32)> {
-    let mut total_group: i32 = 0;
-
-    // find total
-    for i in 0..token_vector.len() as i32 {
-        match token_vector[i as usize] {
-            token::Token::LGROUP => {
-                total_group += 1;
-            } token::Token::RGROUP => {
-                total_group += 1;
-            }
-            _ => {}
-        }
-    }
-
-    // If the total group is uneven, crash.
-    if total_group % 2 != 0 {
-        panic!("There must be an even number of group symbols!")
-    }
-
-    // Declare group_locations
-    let mut group_locations: Vec<(i32, i32)> = Vec::new();
-
-    // if there isn't any groups at all, just return the empty vector
-    if total_group == 0 {
-        return group_locations
-    }
-
-    // declare variables logic for the locating of parenthesis beginning and end locations
-    let mut unsorted_lgroup_locations: Vec<i32> = Vec::new();
-    let mut left_right_value: usize = 0;
-    let mut right_right_value: usize = 0;
-
-    // search for all left values before the first right
-    for i in 0..token_vector.len() as i32 {
-        match token_vector[i as usize] {
-            token::Token::LGROUP => {
-                unsorted_lgroup_locations.push(i);
-            } token::Token::RGROUP => {
-                left_right_value = i as usize;
-                // if there is only one left value, push it and return group_locations
-                if total_group / 2 == 1 {
-                    group_locations.push((unsorted_lgroup_locations.pop().unwrap(), left_right_value as i32));
-                    return group_locations
-                }
-                // break unless so as to search for the rest
-                break;
-            }
-            _ => {}
-        }
-    }
-
-    // Loop over until the group locations are empty
-    while unsorted_lgroup_locations.is_empty() != true {
-        // push right left and known right
-        group_locations.push((unsorted_lgroup_locations.pop().unwrap(), left_right_value as i32));
-
-        // look for next right value between left and token_vector.len(), whilst also marking down left values
-        for i in left_right_value as i32 + 1..token_vector.len() as i32 {
-            match token_vector[i as usize] {
-                token::Token::LGROUP => {
-                    unsorted_lgroup_locations.push(i as i32);
-                }
-                token::Token::RGROUP => {
-                    if i != left_right_value as i32 {
-                        right_right_value = i as usize;
-                        break;
-                    }
-                }
-                _ => {}
-            }
-        }
-        // set left_right_value as the right_right_value, thus moving the block over.
-        left_right_value = right_right_value;
-    }
-
-    let mut sorted_group_locations: Vec<(i32, i32)> = Vec::new();
-    sorted_group_locations.push((-1, -1));
-    let mut next: (i32, i32);
-    let mut insertion: i32;
-    let mut k: i32;
-    let mut copy: (i32, i32);
-    for i in 0..group_locations.len() as i32 {
-        next = group_locations[i as usize];
-        insertion = 0;
-        k = i;
-        while k > 0 && insertion == 0 {
-            if next.0 > sorted_group_locations[k as usize - 1].0 {
-                insertion = k;
-            } else {
-                if k == sorted_group_locations.len() as i32 {
-                    sorted_group_locations.push(sorted_group_locations[k as usize - 1]);
-                } else {
-                    copy = sorted_group_locations[(k as usize) - 1];
-                    let _ = std::mem::replace(&mut sorted_group_locations[k as usize], copy);
-                }
-            }
-            k -= 1;
-        }
-        if insertion == sorted_group_locations.len() as i32 {
-            sorted_group_locations.push(next);
-        } else {
-            let _ = std::mem::replace(&mut sorted_group_locations[insertion as usize], next);
-        }
-    }
-
-    return sorted_group_locations
-}
-
-// Orchestrates the group fixes and returns the fixed Vector.
-fn fix_groups(mut token_vector: Vec<token::Token>) -> (Vec<token::Token>, Vec<(i32, i32)>) {
-    let mut group_locations: Vec<(i32, i32)> = find_groups(token_vector.clone());
-    if group_locations.is_empty() != true {
-        let a: (Vec<token::Token>, Vec<(i32, i32)>);
-        a = rm_sides_add_mul(token_vector.clone(), group_locations.clone());
-        token_vector = a.0;
-        group_locations = a.1;
-        // group_locations = find_groups(token_vector.clone());
-    }
-    return (token_vector, group_locations)
-}
 
 pub fn process(token_vector: Vec<token::Token>) -> Node {
-    let unprocessed = fix_groups(token_vector);
+    let unprocessed = token::fix_groups(token_vector);
     let fixed_token_vector: Vec<token::Token> = unprocessed.0;
     let group_locations: Vec<(i32, i32)> = unprocessed.1;
     let binary_tree: Node = node_creation(split_locater(fixed_token_vector, group_locations)).unwrap();

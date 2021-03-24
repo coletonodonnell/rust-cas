@@ -20,12 +20,6 @@ fn main() {
     }
     
     let a: Vec<token::Token> = token::tokenize(solid);
-    // let b: (Vec<token::Token>, Vec<(i32, i32)>) = tree::fix_groups(a);
-    // let c: Vec<token::Token> = b.0;
-    // let d: Vec<(i32, i32)> = b.1;
-    // println!("{:?}", c);
-    // split_locater(c, d);
-
     println!("Before fix: {:?}", a);
     let b: tree::Node = tree::process(a);
     println!("After fix: {:#?}", b);
