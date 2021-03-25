@@ -91,7 +91,6 @@ pub fn tokenize(string_vector: Vec<String>) -> Vec<Token> {
                     past = a;
                     token_vector.push(Token::LGROUP);
                 } else {
-                    past = a;
                     break;
                 }
             }
@@ -106,18 +105,27 @@ pub fn tokenize(string_vector: Vec<String>) -> Vec<Token> {
         // Else If it ends with a ")", continue
         } else if x.as_str().get(size_of_x - 1..size_of_x).unwrap() == ")" {
             let mut past: i32 = 0;
+            // find first occurrence of )
+            for a in 1..(x.as_str().len() + 1) as i32 {
+                if x.as_str().get(past as usize..a as usize).unwrap() == ")" {
+                    break;
+                }
+                past = a;
+            }
+            
             // if there is stuff before ")", push it.
-            if x.as_str().get(0..1).unwrap().to_string() != ")" {
-                token = tokenizer(x.as_str().get(0..1).unwrap().to_string());
+            if past != 0 && x.as_str().get(0..past as usize).unwrap().to_string() != ")" {
+                token = tokenizer(x.as_str().get(0..past as usize).unwrap().to_string());
                 token_vector.push(token);
             }
+            past = 0;
 
             // Push all ")"
             for a in 1..(x.as_str().len() + 1) as i32 {
                 if x.as_str().get(past as usize..a as usize).unwrap() == ")" {
+                    past = a;
                     token_vector.push(Token::RGROUP);
                 }
-                past = a;
             }
             
         // Else If it begins with a "-", continue
