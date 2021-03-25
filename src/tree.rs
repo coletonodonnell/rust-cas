@@ -243,9 +243,18 @@ fn node_creation(raw_node: (Vec<token::Token>, Vec<(i32, i32)>, Vec<token::Token
     // - If there is NUM and ABSTRACT (MUL, DIV, etc.), NUM goes to the left.
     // - If there is VAR and ABSTRACT (MUL, DIV, etc.), VAR goes to the left.
     // - SPECIAL CASE: If the data_type_node is EXP, then ignore all the above.
+    // - SPECIAL CASE: If the data_type_node is DIV, then ignore all the above.
     } else {
         match data_type_node {
             token::Token::EXP => {
+                a = Node {
+                    data_type: data_type_node,
+                    left: Box::new(node_creation(split_locater(left_branch, left_group_locations))),
+                    right: Box::new(node_creation(split_locater(right_branch, right_group_locations))),
+                };
+                return Some(a);
+            }
+            token::Token::DIV => {
                 a = Node {
                     data_type: data_type_node,
                     left: Box::new(node_creation(split_locater(left_branch, left_group_locations))),
