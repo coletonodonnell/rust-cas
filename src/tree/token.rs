@@ -220,7 +220,7 @@ fn rm_sides_add_mul(mut token_vector: Vec<Token>, mut group_locations: Vec<(i32,
 fn find_groups(token_vector: Vec<Token>) -> Vec<(i32, i32)> {
     let mut total_group: i32 = 0;
 
-    // find total
+    // find total LGROUP and RGROUP
     for i in 0..token_vector.len() as i32 {
         match token_vector[i as usize] {
             Token::LGROUP => {
@@ -271,7 +271,7 @@ fn find_groups(token_vector: Vec<Token>) -> Vec<(i32, i32)> {
 
     // Loop over until the group locations are empty
     while unsorted_lgroup_locations.is_empty() != true {
-        // push right left and known right
+        // push right most left and known right
         group_locations.push((unsorted_lgroup_locations.pop().unwrap(), left_right_value as i32));
 
         // look for next right value between left and token_vector.len(), whilst also marking down left values
@@ -281,7 +281,9 @@ fn find_groups(token_vector: Vec<Token>) -> Vec<(i32, i32)> {
                     unsorted_lgroup_locations.push(i as i32);
                 }
                 Token::RGROUP => {
+                    // if the right value in question isn't the last one we searched for, continue
                     if i != left_right_value as i32 {
+                        // Set the new right value as right_right_value and break
                         right_right_value = i as usize;
                         break;
                     }
@@ -293,12 +295,15 @@ fn find_groups(token_vector: Vec<Token>) -> Vec<(i32, i32)> {
         left_right_value = right_right_value;
     }
 
+    // Declare variables for sorting.
     let mut sorted_group_locations: Vec<(i32, i32)> = Vec::new();
     sorted_group_locations.push((-1, -1));
     let mut next: (i32, i32);
     let mut insertion: i32;
     let mut k: i32;
     let mut copy: (i32, i32);
+
+    // Sort the group_locations vector by left value small to large.
     for i in 0..group_locations.len() as i32 {
         next = group_locations[i as usize];
         insertion = 0;
@@ -322,7 +327,6 @@ fn find_groups(token_vector: Vec<Token>) -> Vec<(i32, i32)> {
             let _ = std::mem::replace(&mut sorted_group_locations[insertion as usize], next);
         }
     }
-
     return sorted_group_locations
 }
 
