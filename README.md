@@ -16,6 +16,6 @@ A simple Computer Algebra System written in Rust (FLVS Coding Club Project)
   - [x] Add the ability to accurately split values into raw branches (left vs. right.)
   - [x] Add the ability to weight raw branches, and then make them left or right depending on weighting.
 - [ ] Add the ability to simplify expressions.
-  - [ ] Add the ability to traverse the tree.
+  - [x] Add the ability to traverse the tree.
   - [ ] Add the ability to locate patterns and simplify them accordingly.
 - [ ] Add the ability to solve expressions.
