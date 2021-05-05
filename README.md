@@ -1,6 +1,8 @@
 # rust-cas
 A simple Computer Algebra System written in Rust (FLVS Coding Club Project)
 
+[See the write up of this CAS here.](https://coleton.io/posts/rust-cas/)
+
 ## TODO
 - [ ] Create a tokenizer to convert an expression to abstract types.
   - [x] Implement accurate tokenization for each type. 
